@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {PLAN} from './layout.js';
+import {DEVICE_CATALOG,DEVICE_PLACEMENTS} from './devices.js';
+assert.equal(DEVICE_PLACEMENTS.length,7);
+for(const [type,count] of [['s2',2],['g2',2],['floor',3]])assert.equal(DEVICE_PLACEMENTS.filter(d=>d.type===type).length,count);
+for(const counter of ['ticket','cafe'])for(const type of ['s2','g2'])assert.equal(DEVICE_PLACEMENTS.find(d=>d.id===`${counter}-${type}`).base,1);
+assert.deepEqual(DEVICE_PLACEMENTS.filter(d=>d.type==='floor').map(d=>d.at),[[422,298],[628,482],[628,595]]);
+for(const d of Object.values(DEVICE_CATALOG))assert.equal(d.validation,'needs-review');
+const layout=readFileSync(new URL('./layout.js',import.meta.url));
+assert.equal(createHash('sha256').update(layout).digest('hex'),'10547362aee6ebbd85f4a03e1cbf81ab08ffd05a2c620f01a382431644c90c1a');
+assert.equal(PLAN.counterHeight,1);assert.equal(PLAN.pendantUnderside,2.5);
+const scene=readFileSync(new URL('./scene.js',import.meta.url),'utf8');
+for(const fixed of ["doubleDoor(57,247,true)","doubleDoor(493,650,false)","V([378,751],1.38)","claw([465,273]","claw([511,273]","person([310,674],{staff:true","person([215,645],{rot:Math.PI/2})","['moveTo',229,729]","['moveTo',93,487]"])assert.ok(scene.includes(fixed),fixed);
+assert.ok(scene.includes('makeSilhouette(V(p),options)'));assert.ok(!scene.includes('finishPeople()'));
+console.log('PASS: unchanged layout checksum, counter/pendant heights, door/display positions, machines, counter anchors, staff/customer sides, silhouette replacement.');

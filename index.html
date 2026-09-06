@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071019"><title>奇乐儿 · 3D 虚拟展厅</title><link rel="stylesheet" href="style.css"><script type="importmap">{"imports":{"three":"/vendor/build/three.module.js","three/addons/":"/vendor/examples/jsm/"}}</script></head>
+<body>
+<header class="header"><div class="brand"><span class="brand-mark">C</span><div><strong>奇乐儿</strong><span>CHEER AMUSEMENT</span></div></div><div class="header-title">游乐场管理系统展厅 <span>/ 3D 空间体验</span></div><div class="header-actions"><button id="referenceBtn">原图对照</button><button id="fullscreen" title="全屏查看">全屏</button></div></header>
+<main>
+<aside id="sidebar"><div class="intro"><span class="eyebrow">VIRTUAL SHOWROOM</span><h1>走进蓝色展厅</h1><p>用真实空间，讲述系统如何运作。</p></div><div class="nav-label">空间导览</div><nav id="zoneNav" aria-label="展厅区域"></nav>
+<div class="detail"><span id="detailTag">空间总览</span><h2 id="detailTitle">从平面，走进空间</h2><p id="detailText">旋转查看布局，或选择一个区域进入。吧台、斜隔墙和设备位置依据原平面重建。</p><button class="primary" id="visitBtn">从入口开始参观 <span>→</span></button></div>
+<div class="sidebar-bottom"><button id="helpBtn">操作帮助与建模依据 <span>↗</span></button><span>Cheer Amusement Management System Showroom</span></div></aside>
+<section class="viewport" aria-label="交互式三维展厅"><canvas id="scene" aria-label="拖拽旋转展厅，滚轮缩放"></canvas>
+<div id="loading"><div class="loader-line"></div><strong>正在搭建你的展厅</strong><span>加载空间、灯光与设备</span></div>
+<div class="view-tools"><div class="segmented"><button data-view="overview" class="selected">鸟瞰</button><button data-view="plan">俯视平面</button><button data-view="entry">入口视角</button><button data-view="walk">自由漫游</button></div><button id="resetBtn" title="恢复默认视角">重置</button></div>
+<div class="scene-options"><label><input id="cutaway" type="checkbox" checked><span>剖切墙体</span></label><label><input id="labels" type="checkbox" checked><span>区域标记</span></label><label><input id="people" type="checkbox" checked><span>人物剪影</span></label><label><input id="lights" type="checkbox" checked><span>蓝色光带</span></label></div>
+<div id="hotspots"></div><div class="camera-caption"><span id="cameraLabel">全景鸟瞰</span><span id="cameraHelp">拖拽旋转 · 滚轮缩放 · 右键平移</span></div>
+<div class="minimap"><div><span>平面定位</span><button id="planBtn" title="展开俯视平面">↗</button></div><canvas id="map" width="320" height="350" aria-label="平面布局与当前位置"></canvas></div>
+<div class="routes"><span class="routes-title">流程演示</span><button data-route="entry">入园流程</button><button data-route="food">买餐 / 取餐</button><button data-route="party">Check-in / Party</button><button id="stopTour" hidden>结束演示</button></div>
+<div id="tourCard" hidden><span id="tourCount"></span><h3 id="tourTitle"></h3><p id="tourText"></p><div><button id="prevStop">上一步</button><button id="nextStop" class="primary">下一步 →</button></div></div>
+<div id="walkPad" hidden><button data-move="forward">↑</button><div><button data-move="left">←</button><button data-move="back">↓</button><button data-move="right">→</button></div></div>
+</section></main><div id="toast" role="status" aria-live="polite"></div>
+<dialog id="referenceDialog"><div class="dialog-head"><h2>结构依据与蓝色效果</h2><button data-close="referenceDialog" aria-label="关闭">×</button></div><div class="reference-grid"><figure><img src="/assets/展厅-原平面.png" alt="用户提供的展厅原始平面图"><figcaption>结构依据：原平面，保留两个吧台的落点与弯曲方向</figcaption></figure><figure><img src="/assets/蓝色展厅-主视角.png" alt="蓝色展厅效果图"><figcaption>视觉依据：蓝色灯光、金属材质与 LED 展示</figcaption></figure></div></dialog>
+<dialog id="helpDialog"><div class="dialog-head"><h2>操作与建模依据</h2><button data-close="helpDialog" aria-label="关闭">×</button></div><div class="help-content"><h3>查看空间</h3><p>鼠标拖拽旋转，滚轮缩放，右键平移。手机单指旋转、双指缩放。选择“自由漫游”后，用 W A S D 或屏幕方向键移动，拖拽改变视线。</p><h3>核对布局</h3><p>俯视平面与三维场景共用同一组坐标。Party room 保留左后斜隔墙，咖啡吧在左侧，前侧售票吧台向厅内弯曲，右边两组闸机相邻游乐场。</p><h3>尺度说明</h3><p>吧台台面离地 1 米，独立吊顶光环下沿离地 2.5 米，中间无挡板。原平面截图没有完整尺寸，整体尺度和设备外壳按图示比例重建，属于可漫游展示模型，尚非施工模型或原厂设备 CAD。</p><h3>设备演示</h3><p>点击区域标记或左侧导航可查看设备与系统的展示关系。三条流程为现场演示脚本，不连接真实支付与闸机。</p></div></dialog>
+<script type="module" src="app.js"></script></body></html>

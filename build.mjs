@@ -1,0 +1,13 @@
+import {mkdir,copyFile,cp,readFile,stat} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import './validate.mjs';
+const root=import.meta.dirname;
+const out=resolve(root,'dist');
+await mkdir(out,{recursive:true});
+for(const name of ['index.html','style.css','app.js','scene.js','layout.js','visuals.js','devices.js'])await copyFile(resolve(root,name),resolve(out,name));
+await mkdir(resolve(out,'assets'),{recursive:true});
+for(const name of ['展厅-原平面.png','蓝色展厅-主视角.png','floor-Diffuse.jpg','floor-nor_gl.jpg','floor-Rough.jpg','world-land.geojson'])await copyFile(resolve(root,'assets',name),resolve(out,'assets',name));
+await cp(resolve(root,'node_modules/three/build'),resolve(out,'vendor/build'),{recursive:true});
+await cp(resolve(root,'node_modules/three/examples/jsm'),resolve(out,'vendor/examples/jsm'),{recursive:true});
+for(const file of ['index.html','vendor/build/three.module.js','assets/蓝色展厅-主视角.png'])if(!(await stat(resolve(out,file))).size)throw Error(`Empty output ${file}`);
+console.log('Static showroom build complete.');
