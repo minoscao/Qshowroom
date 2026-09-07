@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.dirname(fileURLToPath(import.meta.url));
-const assets=path.resolve(root,'../tmp/ppt-showroom/assets');
+const assets=path.resolve(root,'assets');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon'};
 http.createServer((req,res)=>{try{
 const url=new URL(req.url,'http://localhost'); let name=decodeURIComponent(url.pathname); const base=name.startsWith('/assets/')?assets:name.startsWith('/vendor/')?path.join(root,'node_modules/three'):root;

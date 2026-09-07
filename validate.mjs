@@ -3,6 +3,12 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {PLAN} from './layout.js';
 import {DEVICE_CATALOG,DEVICE_PLACEMENTS} from './devices.js';
+import {DISPLAY_CONFIG,panelSize,WINDOW_COUNTRIES} from './exhibit-displays.js';
+assert.equal(DISPLAY_CONFIG.length,5);
+assert.equal(DISPLAY_CONFIG.filter(d=>d.inches===43&&d.mount==='ceiling').length,4);
+assert.equal(DISPLAY_CONFIG.find(d=>d.id==='kitchen-kds').inches,20);
+assert.equal(WINDOW_COUNTRIES.length,4);
+for(const d of DISPLAY_CONFIG){const s=panelSize(d.inches);assert.ok(Math.abs(Math.hypot(s.width,s.height)/.0254-d.inches)<1e-8);if(d.mount==='ceiling'){assert.ok(d.height+s.height/2+.013<PLAN.pendantUnderside);assert.ok(d.height-s.height/2>1.8);}}
 assert.equal(DEVICE_PLACEMENTS.length,7);
 for(const [type,count] of [['s2',2],['g2',2],['floor',3]])assert.equal(DEVICE_PLACEMENTS.filter(d=>d.type===type).length,count);
 for(const counter of ['ticket','cafe'])for(const type of ['s2','g2'])assert.equal(DEVICE_PLACEMENTS.find(d=>d.id===`${counter}-${type}`).base,1);

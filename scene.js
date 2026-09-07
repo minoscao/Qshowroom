@@ -4,6 +4,7 @@ import {PLAN,world,ROUTES} from './layout.js';
 import {materialKit,bevelBox,reflectiveFloor,silhouetteFactory,batchStatic,worldDisplay} from './visuals.js';
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {installDevices} from './devices.js';
+import {installExhibitDisplays} from './exhibit-displays.js';
 
 const V=(p,y=0)=>new THREE.Vector3(...world(p,y));
 export function createShowroom(renderer){
@@ -54,6 +55,7 @@ export function createShowroom(renderer){
  // True continuous floor-standing PISell-style enclosure, shared across all kiosks.
  const uiTicket=screenTexture('欢迎来到奇乐儿'),uiFood=screenTexture('咖啡与轻餐','food');
  const devices=installDevices({architecture,solids,box,cylinder,planeTexture,canvasTexture,materials,uiTicket,uiFood});
+ const exhibitDisplays=installExhibitDisplays({architecture,solids,box,cylinder,planeTexture,canvasTexture,materials});
  // Cafe working appliances and drinks, confined to cafe only.
  {const q=V([231,395],1);box(.59,.40,.38,q.x,q.y+.20,q.z,metal);box(.49,.16,.035,q.x,q.y+.19,q.z+.207,black);box(.65,.035,.49,q.x,q.y+.04,q.z+.04,black);for(let i=0;i<3;i++){cylinder(.028,.028,.07,q.x-.18+i*.18,1.20,q.z+.235,metal);cylinder(.039,.032,.082,q.x-.18+i*.18,1.085,q.z+.23,white);}for(let i=0;i<6;i++){const pp=V([97+i*6,514],1);cylinder(.045,.035,.13,pp.x,1.065,pp.z,mat('cup',0xdbbd96,.7,0));}for(const p of [[201,426],[220,416]]){const v=V(p);cylinder(.075,.075,.22,v.x,1.11,v.z,black);cylinder(.065,.065,.18,v.x,1.28,v.z,glass);}}
  sign('COFFEE / PICK UP',1.65,.17,V([154,509],.62));
@@ -113,6 +115,6 @@ export function createShowroom(renderer){
  for(const py of [697,662,625,588,551]){const pp=V([172,py],.018);const tri=new THREE.Shape();tri.moveTo(-.1,.05);tri.lineTo(0,-.07);tri.lineTo(.1,.05);tri.lineTo(0,.0);tri.closePath();const geo=new THREE.ShapeGeometry(tri);geo.rotateX(Math.PI/2);const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x287fc9,transparent:true,opacity:.65,side:THREE.DoubleSide}));mesh.position.copy(pp);architecture.add(mesh);}
  batchStatic(architecture,gateWings);batchStatic(lightGroup);batchStatic(shell);
  function setRoute(id){routes.children.forEach(g=>g.visible=g.name===id);}
- function update(t,camera){for(const r of routeDots){r.dot.position.copy(r.curve.getPoint((t*.048+r.offset)%1));}for(const [i,wing]of gateWings.entries())wing.rotation.y=routes.children.some(g=>g.visible&&g.name==='entry')?Math.sin(t*.7+i)*.55:0;if(camera){for(const g of people.children){if(g.userData.card)g.userData.card.rotation.y=Math.atan2(camera.position.x-g.position.x,camera.position.z-g.position.z);}reflection.visible=!camera.isOrthographicCamera;}}
+ function update(t,camera){exhibitDisplays.update(t);for(const r of routeDots){r.dot.position.copy(r.curve.getPoint((t*.048+r.offset)%1));}for(const [i,wing]of gateWings.entries())wing.rotation.y=routes.children.some(g=>g.visible&&g.name==='entry')?Math.sin(t*.7+i)*.55:0;if(camera){for(const g of people.children){if(g.userData.card)g.userData.card.rotation.y=Math.atan2(camera.position.x-g.position.x,camera.position.z-g.position.z);}reflection.visible=!camera.isOrthographicCamera;}}
  return {scene,shell,people,lightGroup,lights,solids,PLAN,cafeShape,ticketShape,doors,gateWings,setRoute,update,world,V,architecture,pendants,reflection};
 }
