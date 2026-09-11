@@ -11,7 +11,7 @@ const oldDpr=globalThis.devicePixelRatio,oldWidth=globalThis.innerWidth;
 globalThis.devicePixelRatio=1;globalThis.innerWidth=1280;
 const {worldDisplay}=await import('./visuals.js');
 const calls=[];
-const ctx=new Proxy({fillText:(text)=>calls.push(text),createRadialGradient:()=>({addColorStop(){}})},{get:(target,key)=>target[key]??(()=>{})});
+const ctx=new Proxy({fillText:(text)=>calls.push(text),createRadialGradient:()=>({addColorStop(){}}),createLinearGradient:()=>({addColorStop(){}})},{get:(target,key)=>target[key]??(()=>{})});
 const oldDocument=globalThis.document,oldFetch=globalThis.fetch;
 let resolveMap;
 globalThis.document={createElement:()=>({getContext:()=>ctx})};

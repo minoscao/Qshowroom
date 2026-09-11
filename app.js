@@ -18,6 +18,7 @@ let renderer,model;
 try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(QUALITY.dpr);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.info.autoReset=false;model=createShowroom(renderer);}catch(e){loading.innerHTML='<strong>暂时无法启动三维视图</strong><span>请使用支持 WebGL 的浏览器，并开启硬件加速。</span>';console.error(e);throw e;}
 model.shell.visible=false;
 renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
+window.addEventListener('showroom-model-loaded',()=>{renderer.shadowMap.needsUpdate=true;});
 const camera=new THREE.PerspectiveCamera(43,1,.08,100);camera.position.set(...ZONES[0].camera);
 const planCamera=new THREE.OrthographicCamera(-7,7,7,-7,.1,100);planCamera.position.set(0,30,.001);planCamera.up.set(0,0,-1);planCamera.lookAt(0,0,0);
 let activeCamera=camera;
