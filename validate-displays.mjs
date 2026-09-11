@@ -6,7 +6,7 @@ assert.deepEqual(COUNTRY_PRESETS.map(p=>p.label),['澳洲','迪拜','美国','�
 const architecture=new THREE.Group(),solids=[];
 const materials=Object.fromEntries(['dark','metal','white','black','countertop'].map(k=>[k,new THREE.MeshStandardMaterial()]));
 const ctx=new Proxy({},{get:()=>()=>{}});
-const canvasTexture=(w,h,draw)=>{draw(ctx,w,h);const t=new THREE.Texture();t.image={getContext:()=>ctx};return t;};
+const canvasTexture=(w,h,draw)=>{draw(ctx,w,h);const t=new THREE.Texture();t.image={width:w,height:h,getContext:()=>ctx};return t;};
 const box=(w,h,d,x,y,z,m,p=architecture)=>{const a=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);a.position.set(x,y,z);p.add(a);return a;};
 const cylinder=(a,b,h,x,y,z,m,p=architecture)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(a,b,h),m);o.position.set(x,y,z);p.add(o);return o;};
 const planeTexture=(t,w,h,pos,rot=0,p=architecture)=>{const o=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t}));o.position.copy(pos);o.rotation.y=rot;p.add(o);return o;};

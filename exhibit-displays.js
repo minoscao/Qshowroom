@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {world} from './layout.js';
 import {COUNTRY_PRESETS,getCountry} from './country-presets.js';
+import {createScreenContent} from './screen-content.js';
 
 // Physical panel diagonals are user-specified; housings are generic display assemblies.
 export const DISPLAY_CONFIG=[
@@ -14,16 +15,10 @@ export function panelSize(inches){const diagonal=inches*.0254;return {width:diag
 export const WINDOW_COUNTRIES=COUNTRY_PRESETS;
 
 export function installExhibitDisplays({architecture,box,cylinder,planeTexture,canvasTexture,materials,solids}){
+ const localizedScreens=createScreenContent(canvasTexture);
  const {dark,metal,white,black,countertop}=materials;
  const v=(p,y=0)=>new THREE.Vector3(...world(p,y));
- const content={
-  menu:{title:'咖啡与轻餐',sub:'MENU · 演示菜单',accent:'#efc891',rows:[['美式咖啡','¥ 18'],['拿铁咖啡','¥ 25'],['鸡肉三明治','¥ 32'],['亲子分享套餐','¥ 58']]},
-  pickup:{title:'请取餐',sub:'PICK UP · 演示订单',accent:'#57e6b6',rows:[['A018','请到吧台取餐'],['A021','请到吧台取餐'],['制作中','A022 · A023']]},
-  kitchen:{title:'厨房出餐',sub:'KITCHEN · 演示订单',accent:'#ffba66',rows:[['A022  堂食','拿铁 ×2'],['A023  堂食','三明治 ×1'],['待出餐','2 单']]},
-  ticket:{title:'入园票务',sub:'TICKETS · 演示票价',accent:'#80d7ff',rows:[['儿童畅玩票','¥ 128'],['亲子套票','¥ 168'],['家庭套票','¥ 228'],['游戏卡储值','请在自助机操作']]},
-  advert:{title:'快乐，连接世界',sub:'CHEER AMUSEMENT',accent:'#9cb8ff',rows:[['全球乐园 · 本地体验',''],['生日派对 / FAMILY PARTY',''],['会员礼遇 · 精彩活动','']]}
- };
- const texture=kind=>canvasTexture(1600,900,(c,w,h)=>{const d=content[kind];c.fillStyle='#071321';c.fillRect(0,0,w,h);c.fillStyle='#102d48';c.fillRect(0,0,w,226);c.fillStyle=d.accent;c.fillRect(0,0,14,h);c.font='bold 80px "Microsoft YaHei", sans-serif';c.fillText(d.title,70,117);c.font='30px "Segoe UI", sans-serif';c.fillText(d.sub,74,185);d.rows.forEach(([a,b],i)=>{const y=320+i*127;c.fillStyle='#eaf5ff';c.font='52px "Microsoft YaHei", sans-serif';c.fillText(a,76,y);c.textAlign='right';c.fillStyle=d.accent;c.font='46px "Microsoft YaHei", sans-serif';c.fillText(b,1520,y);c.textAlign='left';c.fillStyle='#213b52';c.fillRect(76,y+38,1448,2);});c.fillStyle='#86a2b8';c.font='25px sans-serif';c.fillText('PISELL  /  奇乐儿展厅 · 模拟演示',76,851);});
+ const texture=localizedScreens.texture;
  for(const cfg of DISPLAY_CONFIG){const size=panelSize(cfg.inches),g=new THREE.Group();g.name=cfg.id;g.position.copy(v(cfg.at,cfg.height));g.rotation.y=cfg.rotation;g.userData={...cfg,...size};architecture.add(g);box(size.width+.025,size.height+.025,.045,0,0,0,black,g);planeTexture(texture(cfg.kind),size.width,size.height,new THREE.Vector3(0,0,.026),0,g);box(.18,.12,.025,0,0,-.04,metal,g);
   if(cfg.mount==='ceiling'){const length=3.66-(cfg.height+size.height/2);for(const x of [-size.width*.30,size.width*.30]){cylinder(.009,.009,length,x,size.height/2+length/2,-.015,metal,g);box(.08,.016,.08,x,3.66-cfg.height,-.015,metal,g);}}else box(.11,.11,.14,0,0,-.09,metal,g);
  }
@@ -44,6 +39,6 @@ export function installExhibitDisplays({architecture,box,cylinder,planeTexture,c
  const windowScreen=planeTexture(sceneryTextures.get('au'),3.04,2.27,new THREE.Vector3(0,.09,.053),0,windowGroup);
  const countryLabel=canvasTexture(1200,84,(c)=>{c.fillStyle='#081728';c.fillRect(0,0,1200,84);});
  planeTexture(countryLabel,3.04,.19,new THREE.Vector3(0,-1.12,.054),0,windowGroup);
- function setCountry(id){const p=getCountry(id);windowScreen.material.map=sceneryTextures.get(p.id);windowScreen.material.needsUpdate=true;const c=countryLabel.image.getContext('2d');c.fillStyle='#081728';c.fillRect(0,0,1200,84);c.fillStyle=p.color;c.font='32px "Microsoft YaHei", sans-serif';c.fillText(p.name+'  ·  室内游乐场模拟',32,54);countryLabel.needsUpdate=true;return sceneryTextures.get(p.id);}
+ function setCountry(id){localizedScreens.setCountry(id);const p=getCountry(id);windowScreen.material.map=sceneryTextures.get(p.id);windowScreen.material.needsUpdate=true;const c=countryLabel.image.getContext('2d');c.fillStyle='#081728';c.fillRect(0,0,1200,84);c.fillStyle=p.color;c.font='32px "Microsoft YaHei", sans-serif';c.fillText(p.name+'  ·  室内游乐场模拟',32,54);countryLabel.needsUpdate=true;return sceneryTextures.get(p.id);}
  setCountry('au');return {setCountry,windowScreen,update(){}};
 }
