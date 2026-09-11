@@ -5,6 +5,7 @@ import {materialKit,bevelBox,reflectiveFloor,silhouetteFactory,batchStatic,world
 import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import {installDevices} from './devices.js';
 import {installExhibitDisplays} from './exhibit-displays.js';
+import {getCountry} from './country-presets.js';
 
 const V=(p,y=0)=>new THREE.Vector3(...world(p,y));
 export function createShowroom(renderer){
@@ -79,11 +80,19 @@ export function createShowroom(renderer){
  function doubleDoor(a,b,open){const ax=world([a,frontY])[0],bx=world([b,frontY])[0],z=world([a,frontY])[2],width=(bx-ax)/2;
  for(const [x,side]of [[ax,1],[bx,-1]]){const pivot=new THREE.Group();pivot.position.set(x,0,z);architecture.add(pivot);const leaf=box(width,2.7,.024,side*width/2,1.35,0,glass,pivot);for(const h of [.05,2.67])box(width,.035,.035,side*width/2,h,0,metal,pivot);box(.04,2.7,.04,side*width,1.35,0,metal,pivot);box(.025,.65,.08,side*(width-.12),1.20,.07,metal,pivot);pivot.rotation.y=open?-side*1.25:0;doors.push({pivot,side,open});} }
  doubleDoor(57,247,true);doubleDoor(493,650,false);
- sign('入口 / ENTRY',2.3,.28,V([149,757],3.0));sign('出口 / EXIT',1.8,.28,V([578,757],3.0));
- sign('奇乐儿游乐场管理系统展厅',4.95,.39,V([367,757],3.0),{sub:'Cheer Amusement Management System Showroom'});
+ const entrySign=sign('入口 / ENTRY',2.3,.28,V([149,757],3.0));const exitSign=sign('出口 / EXIT',1.8,.28,V([578,757],3.0));
+ const titleSign=sign('奇乐儿游乐场管理系统展厅',4.95,.39,V([367,757],3.0),{sub:'Cheer Amusement Management System Showroom'});
+ function updateFacadeSign(mesh,text,preset,sub=''){
+  const t=mesh.material.map,c=t.image.getContext('2d'),w=t.image.width,h=t.image.height;
+  c.fillStyle='#071321';c.fillRect(0,0,w,h);c.strokeStyle=preset.color;c.lineWidth=3;
+  for(let x=-h;x<w;x+=85){c.beginPath();c.moveTo(x,h);c.lineTo(x+h,0);c.stroke();}
+  c.fillStyle='#071321dd';c.fillRect(0,h*.12,w,h*.76);c.textAlign='center';c.fillStyle='#ffffff';
+  c.font=`600 ${h*(sub?.42:.54)}px "Microsoft YaHei","Segoe UI",sans-serif`;c.fillText(text,w/2,h*(sub?.49:.68),w*.94);
+  if(sub){c.fillStyle=preset.color;c.font=`${h*.22}px "Microsoft YaHei","Segoe UI",sans-serif`;c.fillText(sub,w/2,h*.84,w*.94);}
+  t.needsUpdate=true;
+ }
  // Back scene uses an existing showroom image as an exhibition screen asset, never as geometry.
- const loader=new THREE.TextureLoader();const backTex=loader.load('/assets/蓝色展厅-主视角.png');backTex.colorSpace=THREE.SRGBColorSpace;backTex.wrapS=backTex.wrapT=THREE.ClampToEdgeWrapping;backTex.repeat.set(.31,.28);backTex.offset.set(.23,.66);
- const backMid=V([494,141],1.67);box(3.30,2.78,.14,backMid.x,1.6,backMid.z,black);planeTexture(backTex,3.25,2.71,backMid.clone().setY(1.61).add(new THREE.Vector3(0,0,.082)),0,architecture,1.0);segment([391,144],[593,144],.25,.025,.15,glow,lightGroup);
+ const backMid=V([494,141],1.67);box(3.30,2.78,.14,backMid.x,1.6,backMid.z,black);const countryBackScreen=planeTexture(exhibitDisplays.setCountry('au'),3.25,2.71,backMid.clone().setY(1.61).add(new THREE.Vector3(0,0,.082)),0,architecture,1.0);segment([391,144],[593,144],.25,.025,.15,glow,lightGroup);
  // Party furniture, birthday scene and scaled human figures.
  const makeSilhouette=silhouetteFactory();
  function person(p,options={}){const g=makeSilhouette(V(p),options);people.add(g);return g;}
@@ -115,6 +124,8 @@ export function createShowroom(renderer){
  for(const py of [697,662,625,588,551]){const pp=V([172,py],.018);const tri=new THREE.Shape();tri.moveTo(-.1,.05);tri.lineTo(0,-.07);tri.lineTo(.1,.05);tri.lineTo(0,.0);tri.closePath();const geo=new THREE.ShapeGeometry(tri);geo.rotateX(Math.PI/2);const mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x287fc9,transparent:true,opacity:.65,side:THREE.DoubleSide}));mesh.position.copy(pp);architecture.add(mesh);}
  batchStatic(architecture,gateWings);batchStatic(lightGroup);batchStatic(shell);
  function setRoute(id){routes.children.forEach(g=>g.visible=g.name===id);}
+ function setCountry(id){const preset=getCountry(id);countryBackScreen.material.map=exhibitDisplays.setCountry(preset.id);countryBackScreen.material.needsUpdate=true;glow.emissive.set(preset.color);for(const light of lights)light.color.set(preset.color);updateFacadeSign(entrySign,preset.entry,preset);updateFacadeSign(exitSign,preset.exit,preset);updateFacadeSign(titleSign,'奇乐儿游乐场管理系统展厅',preset,'Cheer Amusement Management System Showroom · '+preset.name.split(' / ')[1]);mapTex.userData.setCountry(preset);return preset;}
+ setCountry('au');
  function update(t,camera){exhibitDisplays.update(t);for(const r of routeDots){r.dot.position.copy(r.curve.getPoint((t*.048+r.offset)%1));}for(const [i,wing]of gateWings.entries())wing.rotation.y=routes.children.some(g=>g.visible&&g.name==='entry')?Math.sin(t*.7+i)*.55:0;if(camera){for(const g of people.children){if(g.userData.card)g.userData.card.rotation.y=Math.atan2(camera.position.x-g.position.x,camera.position.z-g.position.z);}reflection.visible=!camera.isOrthographicCamera;}}
- return {scene,shell,people,lightGroup,lights,solids,PLAN,cafeShape,ticketShape,doors,gateWings,setRoute,update,world,V,architecture,pendants,reflection};
+ return {scene,shell,people,lightGroup,lights,solids,PLAN,cafeShape,ticketShape,doors,gateWings,setRoute,setCountry,update,world,V,architecture,pendants,reflection};
 }

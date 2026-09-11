@@ -62,6 +62,13 @@ export function batchStatic(root,excluded=[]){root.updateMatrixWorld(true);const
 
 export function worldDisplay(){
  const texture=makeTexture(2048,1280,(c,w,h)=>{c.fillStyle='#051635';c.fillRect(0,0,w,h);});
+ let base=null,preset=null;
+ function localize(){if(!base||!preset)return;const c=texture.image.getContext('2d'),w=2048,h=1280;c.clearRect(0,0,w,h);c.drawImage(base,0,0);
+  c.fillStyle='#031533';c.fillRect(0,0,w,190);c.fillRect(0,1110,w,170);c.fillStyle=preset.color;c.fillRect(0,0,w,12);c.fillRect(0,h-12,w,12);
+  c.textAlign='left';c.font='600 62px "Microsoft YaHei","Segoe UI",sans-serif';c.fillText(preset.headline,90,105,w-180);c.font='28px "Microsoft YaHei","Segoe UI",sans-serif';c.fillText(preset.detail,93,161,w-186);
+  const [lon,lat]=preset.location,x=(lon+180)/360*(w-160)+80,y=(84-lat)/150*830+230;c.strokeStyle=preset.color;c.lineWidth=8;c.beginPath();c.arc(x,y,28,0,Math.PI*2);c.stroke();c.fillStyle=preset.color;c.beginPath();c.arc(x,y,10,0,Math.PI*2);c.fill();c.font='34px "Microsoft YaHei","Segoe UI",sans-serif';c.fillText(preset.name,90,1177);c.font='24px "Segoe UI",sans-serif';c.fillText('CHEER AMUSEMENT  /  PISELL GLOBAL EXPERIENCE',90,1228);texture.needsUpdate=true;
+ }
+ texture.userData.setCountry=p=>{preset=p;localize();};
  fetch('/assets/world-land.geojson').then(r=>{if(!r.ok)throw Error('Map unavailable');return r.json();}).then(data=>{
  const c=texture.image.getContext('2d'),w=2048,h=1280;c.fillStyle='#031533';c.fillRect(0,0,w,h);const glow=c.createRadialGradient(w*.53,h*.45,20,w*.53,h*.45,w*.65);glow.addColorStop(0,'#10396a');glow.addColorStop(1,'#031124');c.fillStyle=glow;c.fillRect(0,0,w,h);
  c.lineWidth=1;c.strokeStyle='#164575';for(let x=0;x<w;x+=80){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}for(let y=0;y<h;y+=80){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
@@ -69,5 +76,6 @@ export function worldDisplay(){
  c.beginPath();for(const f of data.features){const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;for(const poly of polys){for(const ring of poly){ring.forEach((p,i)=>{const [x,y]=proj(p);i?c.lineTo(x,y):c.moveTo(x,y);});c.closePath();}}}c.fillStyle='#2c7db5';c.fill();c.strokeStyle='#7bd2f0';c.lineWidth=1.5;c.stroke();c.save();c.clip();c.fillStyle='#a3e0f2';for(let x=50;x<w;x+=9)for(let y=180;y<h;y+=9){c.fillRect(x,y,2,2);}c.restore();
  const nodes=[[-100,38],[-50,-18],[3,49],[53,24],[117,32],[136,36],[134,-25]];const origin=proj([117,32]);for(const n of nodes){const p=proj(n);c.strokeStyle='#78d4fd';c.lineWidth=2;c.beginPath();c.moveTo(...origin);c.quadraticCurveTo((origin[0]+p[0])/2,Math.min(p[1],origin[1])-140,...p);c.stroke();c.shadowBlur=16;c.shadowColor='#46baff';c.fillStyle='#fff';c.beginPath();c.arc(...p,6,0,7);c.fill();c.shadowBlur=0;}
  c.fillStyle='#edf9ff';c.font='600 62px Segoe UI';c.fillText('ONE SYSTEM. CONNECTED WORLD.',90,113);c.font='24px Segoe UI';c.fillStyle='#7cbdde';c.fillText('PISELL  /  GLOBAL DEPLOYMENT',93,164);c.fillText('MULTILINGUAL    ·    MULTICURRENCY    ·    MULTI-LOCATION',90,1177);texture.needsUpdate=true;
+ base=document.createElement('canvas');base.width=w;base.height=h;base.getContext('2d').drawImage(texture.image,0,0);localize();
  }).catch(e=>console.warn('World display:',e.message));return texture;
 }

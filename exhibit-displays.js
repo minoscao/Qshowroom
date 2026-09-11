@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {world} from './layout.js';
+import {COUNTRY_PRESETS,getCountry} from './country-presets.js';
 
 // Physical panel diagonals are user-specified; housings are generic display assemblies.
 export const DISPLAY_CONFIG=[
@@ -10,7 +11,7 @@ export const DISPLAY_CONFIG=[
  {id:'ticket-advert',inches:43,at:[343,574],height:2.17,rotation:-Math.PI/2,kind:'advert',mount:'ceiling'}
 ];
 export function panelSize(inches){const diagonal=inches*.0254;return {width:diagonal*16/Math.sqrt(337),height:diagonal*9/Math.sqrt(337)};}
-export const WINDOW_COUNTRIES=[{name:'美国 / USA',offset:[0,.5]},{name:'日本 / JAPAN',offset:[.5,.5]},{name:'阿联酋 / UAE',offset:[0,0]},{name:'法国 / FRANCE',offset:[.5,0]}];
+export const WINDOW_COUNTRIES=COUNTRY_PRESETS;
 
 export function installExhibitDisplays({architecture,box,cylinder,planeTexture,canvasTexture,materials,solids}){
  const {dark,metal,white,black,countertop}=materials;
@@ -38,9 +39,11 @@ export function installExhibitDisplays({architecture,box,cylinder,planeTexture,c
  // LED simulated window occupies the second annotated left perimeter segment, not the entrance.
  const windowGroup=new THREE.Group();windowGroup.name='country-window-led';windowGroup.position.copy(v([58,640],1.63));windowGroup.rotation.y=Math.PI/2;architecture.add(windowGroup);
  box(3.10,2.54,.09,0,0,0,black,windowGroup);
- const scenery=new THREE.TextureLoader().load('/assets/country-window-atlas.png');scenery.colorSpace=THREE.SRGBColorSpace;scenery.repeat.set(.5,.5);scenery.offset.set(...WINDOW_COUNTRIES[0].offset);scenery.anisotropy=4;
- planeTexture(scenery,3.04,2.27,new THREE.Vector3(0,.09,.053),0,windowGroup);
+ const textureLoader=new THREE.TextureLoader();
+ const sceneryTextures=new Map(COUNTRY_PRESETS.map(p=>{const t=textureLoader.load(p.image);t.colorSpace=THREE.SRGBColorSpace;t.repeat.set(...p.repeat);t.offset.set(...p.offset);t.anisotropy=4;return [p.id,t];}));
+ const windowScreen=planeTexture(sceneryTextures.get('au'),3.04,2.27,new THREE.Vector3(0,.09,.053),0,windowGroup);
  const countryLabel=canvasTexture(1200,84,(c)=>{c.fillStyle='#081728';c.fillRect(0,0,1200,84);});
  planeTexture(countryLabel,3.04,.19,new THREE.Vector3(0,-1.12,.054),0,windowGroup);
- let last=-1;return {update(t){const index=Math.floor(t/14)%WINDOW_COUNTRIES.length;if(index===last)return;last=index;scenery.offset.set(...WINDOW_COUNTRIES[index].offset);const c=countryLabel.image.getContext('2d');c.fillStyle='#081728';c.fillRect(0,0,1200,84);c.fillStyle='#ceefff';c.font='32px "Microsoft YaHei", sans-serif';c.fillText(WINDOW_COUNTRIES[index].name+'  ·  游乐场窗景模拟',32,54);countryLabel.needsUpdate=true;}};
+ function setCountry(id){const p=getCountry(id);windowScreen.material.map=sceneryTextures.get(p.id);windowScreen.material.needsUpdate=true;const c=countryLabel.image.getContext('2d');c.fillStyle='#081728';c.fillRect(0,0,1200,84);c.fillStyle=p.color;c.font='32px "Microsoft YaHei", sans-serif';c.fillText(p.name+'  ·  室内游乐场模拟',32,54);countryLabel.needsUpdate=true;return sceneryTextures.get(p.id);}
+ setCountry('au');return {setCountry,windowScreen,update(){}};
 }

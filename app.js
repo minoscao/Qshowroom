@@ -8,6 +8,7 @@ import {createShowroom} from './scene.js';
 import {PLAN,ZONES,ROUTES,world} from './layout.js';
 import {QUALITY} from './visuals.js';
 import {DEVICE_ZONE_COPY} from './devices.js';
+import {COUNTRY_PRESETS,getCountry} from './country-presets.js';
 for(const zone of ZONES)if(DEVICE_ZONE_COPY[zone.id])zone.description=DEVICE_ZONE_COPY[zone.id];
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -24,6 +25,12 @@ const controls=new OrbitControls(camera,canvas);controls.target.set(...ZONES[0].
 const target=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4});const composer=new EffectComposer(renderer,target);const renderPass=new RenderPass(model.scene,camera);composer.addPass(renderPass);const bloom=new UnrealBloomPass(new THREE.Vector2(800,600),.32,.25,1.15);composer.addPass(bloom);composer.addPass(new OutputPass());
 const state={mode:'overview',zone:'all',route:null,stop:0,transition:null,yaw:0,pitch:0,drag:false,keys:new Set(),lastPointer:null,doorPass:true};let toastTimer;
 function toast(s){$('#toast').textContent=s;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3000);}
+let selectedCountry='au';
+try{selectedCountry=getCountry(localStorage.getItem('showroom-country')).id;}catch{}
+function selectCountry(id,announce=true){const preset=model.setCountry(id);selectedCountry=preset.id;for(const b of $$('[data-country]')){const active=b.dataset.country===selectedCountry;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));}try{localStorage.setItem('showroom-country',selectedCountry);}catch{}renderer.shadowMap.needsUpdate=true;if(announce)toast(`已切换至${preset.label}：室内乐园、灯光、出入口及门口 LED 已同步`);}
+for(const preset of COUNTRY_PRESETS){const b=document.createElement('button');b.type='button';b.dataset.country=preset.id;b.textContent=preset.label;b.style.setProperty('--country-color',preset.color);b.onclick=()=>selectCountry(preset.id);$('#countryButtons').append(b);}
+selectCountry(selectedCountry,false);
+$('.intro h1').textContent='走进全球展厅';$('#lights').nextElementSibling.textContent='氛围光带';
 function fitOverview(position,target){const a=new THREE.Vector3(...position),b=new THREE.Vector3(...target);return a.sub(b).multiplyScalar(Math.max(1,Math.min(2.1,1/camera.aspect))).add(b);}
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();controls.maxDistance=45;if(state.mode==='overview'&&state.zone==='all'&&!state.transition){camera.position.copy(fitOverview(ZONES[0].camera,ZONES[0].target));controls.target.set(...ZONES[0].target);}const half=6.3*Math.max(1,1/(w/h));planCamera.left=-half*w/h;planCamera.right=half*w/h;planCamera.top=half;planCamera.bottom=-half;planCamera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(viewport);resize();
